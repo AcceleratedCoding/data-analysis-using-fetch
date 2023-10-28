@@ -50,23 +50,16 @@ const submitAnswer = async (assignmentId, answer) => {
         let dataa = await getJargons();
         console.log('assignment_id: ' + dataa.assignmentID);
         const allJargons = dataa.jargons;
-        let counts = {}
+        let counts = new Map();
         if (allJargons?.length >= 1) {
             allJargons.forEach((item) => {
-
-                if (counts?.[item]) {
-                    if ((counts[item] + 1) > Math.max(...Object.values(counts))) {
-                    }
-                    counts = { ...counts, [item]: (counts[item] + 1) };
-                } else {
-                    counts = { ...counts, [item]: 1 }
-                }
-
+                counts.has(item) ? counts.set(item, (counts.get(item) + 1)) : counts.set(item, 1);
             })
 
-            maxCount = Math.max(...Object.values(counts));
-            const maxUsedJargons = Object.entries(counts).filter(
-                (item) => item[1] == maxCount)?.map((item) => {
+            maxCount = Math.max(...counts.values());
+            const maxUsedJargons = [...counts?.entries(counts)]?.filter(
+                (item) => item[1] == maxCount)?.map(
+                    (item) => {
                     return item[0];
                 });
 
