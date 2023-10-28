@@ -15,7 +15,7 @@ const getJargons = async () => {
             }
         })
     } catch (error) {
-        return new Error(error);
+        throw new Error(error);
     }
 }
 
@@ -40,7 +40,7 @@ const submitAnswer = async (assignmentId, answer) => {
             }
         })
     } catch (error) {
-        return new Error(error);
+        throw new Error(error);
     }
 
 }
