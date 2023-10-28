@@ -14,12 +14,36 @@ const getJargons = async () => {
                 return await getJargons();
             }
         })
-    } catch {
+    } catch (error) {
         return new Error(error);
     }
 }
 
+const submitAnswer = async (assignmentId, answer) => {
+    try {
+        const url = 'https://one00x-data-analysis.onrender.com/assignment';
+        return await fetch(url, {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "assignment_id": assignmentId,
+                "answer": answer
+            }),
+        }).then(async response => {
 
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                return data.result
+            }
+        })
+    } catch (error) {
+        return new Error(error);
+    }
+
+}
 
 (async () => {
     try {
@@ -27,17 +51,11 @@ const getJargons = async () => {
         console.log('assignment_id: ' + dataa.assignmentID);
         const allJargons = dataa.jargons;
         let counts = {}
-        let maxUsedJargon = '';
         if (allJargons?.length >= 1) {
             allJargons.forEach((item) => {
 
-                if (!maxUsedJargon) {
-                    maxUsedJargon = item;
-                }
-
                 if (counts?.[item]) {
                     if ((counts[item] + 1) > Math.max(...Object.values(counts))) {
-                        maxUsedJargon = item
                     }
                     counts = { ...counts, [item]: (counts[item] + 1) };
                 } else {
@@ -45,29 +63,23 @@ const getJargons = async () => {
                 }
 
             })
-            console.log('answer: ' + maxUsedJargon);
 
-            const url = 'https://one00x-data-analysis.onrender.com/assignment';
-            await fetch(url, {
-                method: 'post',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    "assignment_id": dataa.assignmentID,
-                    "answer": maxUsedJargon
-                }),
-            }).then(async response => {
+            maxCount = Math.max(...Object.values(counts));
+            const maxUsedJargons = Object.entries(counts).filter(
+                (item) => item[1] == maxCount)?.map((item) => {
+                    return item[0];
+                });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log(data);
+            let i = 0;
+            while (i < (maxUsedJargons.length)) {
+                let result = await submitAnswer(dataa.assignmentID, maxUsedJargons[i]);
+                if (result == 'submitted_correct') {
+                    break;
                 } else {
-                    return new Error('submitting answer failed');
+                    i += 1;
                 }
-            }).catch(error => {
-                console.log(error);
-            })
+            }
+
         } else {
             console.log("Jargons array received is empty")
         }
